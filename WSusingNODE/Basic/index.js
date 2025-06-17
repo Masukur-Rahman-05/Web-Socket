@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +15,12 @@ wss.on("connection", (ws, req) => {
   const ip = req.socket.remoteAddress;
   console.log("A new user has connected from", ip);
   ws.send("Hello");
+
+  ws.isAlive = true;
+  ws.on("pong", () => {
+    ws.isAlive = true;
+    console.log("Pong Received- User is active");
+  });
 
   ws.on("message", (message) => {
     const msg = message.toString();
@@ -32,10 +38,28 @@ wss.on("connection", (ws, req) => {
       console.log("Client error Occurred", error);
     });
   });
+
   ws.on("close", (code, reason) => {
     console.log(`Connection closed with code ${code} and reason ${reason}`);
   });
 });
+
+//Ping-Pong Logic
+
+const isActive = () => {
+  wss.clients.forEach((ws) => {
+    if (ws.isAlive === false) {
+      console.log("No ping Received- Terminating connection");
+      client.terminate();
+    }
+
+    ws.isAlive = false;
+    console.log("Sending Ping");
+    ws.ping();
+  });
+};
+
+setInterval(isActive, 5000);
 
 wss.on("error", (error) => {
   console.log("Server Error occurred", error);
