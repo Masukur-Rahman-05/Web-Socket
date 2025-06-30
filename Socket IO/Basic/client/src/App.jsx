@@ -1,11 +1,13 @@
 import Basic from "./components/Basic.jsx";
+import { Broadcast } from "./components/Broadcast.jsx";
 import { Crud } from "./components/Crud.jsx";
 
 const App = () => {
   return (
     <>
       {/* <Basic /> */}
-      <Crud />
+      {/* <Crud /> */}
+      <Broadcast />
     </>
   );
 };
