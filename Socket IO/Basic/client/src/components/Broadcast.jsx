@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 
 const socket = io("http://localhost:3000", {
@@ -10,6 +10,7 @@ const socket = io("http://localhost:3000", {
 export const Broadcast = () => {
   const [input, setInput] = useState("");
   const [message, setMessage] = useState([]);
+  const lastMessageRef = useRef(null);
 
   const connectSocket = () => {
     socket.on("connect", () => {
@@ -20,8 +21,6 @@ export const Broadcast = () => {
       setMessage((prev) => [...prev, data]);
     });
   };
-
-  console.log(message);
 
   const handleInput = (e) => {
     setInput(e.target.value);
@@ -64,6 +63,12 @@ export const Broadcast = () => {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [message]);
   return (
     <div className="w-screen h-screen bg-black text-white flex items-center flex-col gap-10  pt-[100px]">
       <h2 className="text-3xl text-gray-300">Broadcasting Message</h2>
@@ -88,8 +93,10 @@ export const Broadcast = () => {
         <div className="w-[600px] h-[350px] border border-gray-300 p-10 overflow-y-auto">
           {message.map((item, index) => {
             const isMine = item.id === socket.id;
+            const isLast = index === message.length - 1;
             return (
               <div
+                ref={isLast ? lastMessageRef : null}
                 key={index}
                 className={`mb-4 ${isMine ? "text-right" : "text-left"}`}
               >
@@ -100,7 +107,7 @@ export const Broadcast = () => {
                 >
                   {item.message}
                 </div>
-                {isMine && (
+                {isMine && isLast && (
                   <div className="text-xs text-gray-400 mt-1">
                     {item.status === "pending" ? "Pending" : "Sent"}
                   </div>
