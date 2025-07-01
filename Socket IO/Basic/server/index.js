@@ -20,10 +20,16 @@ let users = [];
 io.on("connection", (socket) => {
   console.log("User Connected", socket.id);
 
-  socket.on("send-message", (data) => {
+  socket.on("send-message", (data, callback) => {
+    let payload = {
+      ...data,
+      status: "sent",
+    };
+
+    callback(payload);
     users.push(data);
     console.log("Users", users);
-    socket.broadcast.emit("receive-message", data);
+    socket.broadcast.emit("receive-message", payload);
   });
 });
 

@@ -25,7 +25,6 @@ export const Broadcast = () => {
 
   const handleInput = (e) => {
     setInput(e.target.value);
-    console.log(input);
   };
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -35,11 +34,25 @@ export const Broadcast = () => {
     const payload = {
       id: socket.id,
       message: input,
+      status: "pending",
     };
 
     setMessage((prev) => [...prev, payload]);
 
-    socket.emit("send-message", payload);
+    socket.emit("send-message", payload, (response) => {
+      setMessage((prev) => {
+        return prev.map((user) => {
+          if (user.id === response.id) {
+            return {
+              ...user,
+              status: response.status,
+            };
+          } else {
+            return user;
+          }
+        });
+      });
+    });
     setInput("");
   };
 
@@ -72,21 +85,26 @@ export const Broadcast = () => {
       </form>
 
       {message.length > 0 && (
-        <div className="w-[600px] h-[300px] border border-gray-300 p-10 overflow-y-auto">
+        <div className="w-[600px] h-[350px] border border-gray-300 p-10 overflow-y-auto">
           {message.map((item, index) => {
-            let isMine = item.id === socket.id;
+            const isMine = item.id === socket.id;
             return (
               <div
                 key={index}
-                className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                className={`mb-4 ${isMine ? "text-right" : "text-left"}`}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-2 rounded-xl text-white ${
-                    isMine ? "bg-blue-500 text-right" : "bg-gray-700 text-left"
+                  className={`inline-block max-w-[80%] px-4 py-2 rounded-xl text-white ${
+                    isMine ? "bg-blue-500" : "bg-gray-700"
                   }`}
                 >
                   {item.message}
                 </div>
+                {isMine && (
+                  <div className="text-xs text-gray-400 mt-1">
+                    {item.status === "pending" ? "Pending" : "Sent"}
+                  </div>
+                )}
               </div>
             );
           })}
