@@ -1,9 +1,14 @@
+// index.js
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 
 const app = express();
 const server = http.createServer(app);
+
+// ──────────────────────────────────────────────
+// Socket.IO setup
+// ──────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
@@ -11,25 +16,69 @@ const io = new Server(server, {
   },
 });
 
+// Simple HTTP route
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
+
+// ──────────────────────────────────────────────
+// Default namespace ("/")
+// ──────────────────────────────────────────────
 io.on("connection", () => {
-  console.log("User Connect to default namespace ");
+  console.log("User connected to default namespace");
 });
 
+// ──────────────────────────────────────────────
+// /chat namespace with room logic
+// ──────────────────────────────────────────────
 const chatNamespace = io.of("/chat");
 
 chatNamespace.on("connection", (socket) => {
-  console.log("New User Connected", socket.id);
+  console.log("User connected to /chat:", socket.id);
 
-  socket.on("send-message", (data) => {
-    chatNamespace.emit("receive-message", data);
+  // Join a room
+  socket.on("join-room", (roomName) => {
+    if (!roomName) return;
+
+    // leave previous rooms (except the socket’s own room)
+    socket.rooms.forEach((room) => {
+      if (room !== socket.id) socket.leave(room);
+    });
+
+    socket.join(roomName);
+    console.log(`${socket.id} joined room ${roomName}`);
+
+    // Optional system‑message announcing the join
+    chatNamespace.to(roomName).emit("receive-message", {
+      id: "System",
+      message: `${socket.id} joined`,
+      timestamp: Date.now(),
+    });
+  });
+
+  // Incoming chat message → broadcast to the specific room
+  socket.on("send-message", ({ room, payload }) => {
+    console.log("Message received:", payload);
+
+    const data = {
+      id: payload.id,
+      message: payload.message,
+      timestamp: Date.now(),
+    };
+
+    chatNamespace.to(room).emit("receive-message", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
   });
 });
 
+// ──────────────────────────────────────────────
+// Start server
+// ──────────────────────────────────────────────
 server.listen(3000, () => {
-  console.log("Server is running on port 3000");
+  console.log("Server running on http://localhost:3000");
 });
 
 //......................This Section is for Basic.jsx and Crud.jsx...............................
