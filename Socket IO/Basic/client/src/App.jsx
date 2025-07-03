@@ -1,13 +1,15 @@
 import Basic from "./components/Basic.jsx";
 import { Broadcast } from "./components/Broadcast.jsx";
 import { Crud } from "./components/Crud.jsx";
+import { Namespace } from "./components/Namespace.jsx";
 
 const App = () => {
   return (
     <>
       {/* <Basic /> */}
       {/* <Crud /> */}
-      <Broadcast />
+      {/* <Broadcast /> */}
+      <Namespace />
     </>
   );
 };

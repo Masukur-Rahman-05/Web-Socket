@@ -14,22 +14,17 @@ const io = new Server(server, {
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
+io.on("connection", () => {
+  console.log("User Connect to default namespace ");
+});
 
-let users = [];
+const chatNamespace = io.of("/chat");
 
-io.on("connection", (socket) => {
-  console.log("User Connected", socket.id);
+chatNamespace.on("connection", (socket) => {
+  console.log("New User Connected", socket.id);
 
-  socket.on("send-message", (data, callback) => {
-    let payload = {
-      ...data,
-      status: "sent",
-    };
-
-    callback(payload);
-    users.push(data);
-    console.log("Users", users);
-    socket.broadcast.emit("receive-message", payload);
+  socket.on("send-message", (data) => {
+    chatNamespace.emit("receive-message", data);
   });
 });
 
@@ -88,5 +83,26 @@ io.on("connection", (socket) => {
 
 server.listen(3000, () => {
   console.log("Server is running on port 3000");
+});
+*/
+
+//......................This Section is for Broadcast.jsx...............................
+/*
+let users = [];
+
+io.on("connection", (socket) => {
+  console.log("User Connected", socket.id);
+
+  socket.on("send-message", (data, callback) => {
+    let payload = {
+      ...data,
+      status: "sent",
+    };
+
+    callback(payload);
+    users.push(data);
+    console.log("Users", users);
+    socket.broadcast.emit("receive-message", payload);
+  });
 });
 */
