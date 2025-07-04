@@ -10,7 +10,8 @@ const socket = io("http://localhost:3000/chat", {
 export const Room = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [room, setRoom] = useState("dummyRoom");
+  const [room, setRoom] = useState("demoRoom");
+  const [isJoin, setJoin] = useState(false);
 
   const connectSocket = () => {
     socket.on("connect", () => {
@@ -22,6 +23,10 @@ export const Room = () => {
 
     socket.on("receive-message", (data) => {
       setMessages((prev) => [...prev, data]);
+    });
+
+    socket.on("join-room", (data) => {
+      setJoin(data);
     });
   };
 
@@ -38,6 +43,16 @@ export const Room = () => {
     e.preventDefault();
     if (room.trim()) {
       socket.emit("join-room", room);
+    }
+  };
+
+  const handleLeave = () => {
+    if (room.trim()) {
+      socket.emit("leave-room", room);
+      setMessages([]);
+      setJoin(false);
+    } else {
+      alert("Please enter a room name");
     }
   };
 
@@ -58,7 +73,7 @@ export const Room = () => {
   };
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
-      <div className="w-[800px] h-[600px] border border-gray-700 flex flex-col gap-5 p-5 rounded-md">
+      <div className="md:w-[800px] h-[700px] sm:w-[600px] border border-gray-700 flex flex-col gap-5 p-5 rounded-md">
         <div className="text-center text-2xl">- Room Example -</div>
 
         <form className="flex items-center gap-3">
@@ -76,13 +91,26 @@ export const Room = () => {
             Join
           </button>
         </form>
-        <div className="w-full h-[350px] border border-gray-600 overflow-y-auto rounded-md">
+        <div className="w-full flex justify-center">
+          <button
+            onClick={handleLeave}
+            disabled={!isJoin}
+            className={`px-5 py-2 bg-red-600 rounded-md ${
+              isJoin ? "cursor-pointer" : "cursor-not-allowed bg-red-900"
+            } `}
+          >
+            Leave
+          </button>
+        </div>
+        <div className="w-full h-[350px] border border-gray-600 overflow-y-auto rounded-md p-3">
           {messages.length === 0 ? (
             <p className="text-gray-400 text-sm italic">No messages yet...</p>
           ) : (
             messages.map((msg, index) => (
-              <div key={index} className="mb-2">
-                <span className="text-blue-300 font-medium">{msg.id}</span>{" "}
+              <div key={index} className="mb-2 ">
+                <span className={"text-blue-300 font-medium"}>
+                  {msg.id === socket.id ? "You" : msg.id}
+                </span>{" "}
                 <span className="text-gray-500 text-sm">
                   ({new Date(msg.timestamp).toLocaleTimeString()})
                 </span>

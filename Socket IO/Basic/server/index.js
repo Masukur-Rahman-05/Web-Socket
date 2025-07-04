@@ -39,19 +39,28 @@ chatNamespace.on("connection", (socket) => {
   // Join a room
   socket.on("join-room", (roomName) => {
     if (!roomName) return;
-
-    // leave previous rooms (except the socket’s own room)
-    socket.rooms.forEach((room) => {
-      if (room !== socket.id) socket.leave(room);
-    });
-
     socket.join(roomName);
     console.log(`${socket.id} joined room ${roomName}`);
+
+    chatNamespace.to(roomName).emit("join-room", true);
 
     // Optional system‑message announcing the join
     chatNamespace.to(roomName).emit("receive-message", {
       id: "System",
       message: `${socket.id} joined`,
+      timestamp: Date.now(),
+    });
+  });
+
+  socket.on("leave-room", (room) => {
+    if (!room) return;
+
+    socket.leave(room);
+    console.log(`${socket.id} left room ${room}`);
+
+    socket.to(room).emit("receive-message", {
+      id: "System",
+      message: `${socket.id} left`,
       timestamp: Date.now(),
     });
   });
