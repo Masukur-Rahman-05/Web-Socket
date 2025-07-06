@@ -2,6 +2,7 @@ import Basic from "./components/Basic.jsx";
 import { Broadcast } from "./components/Broadcast.jsx";
 import { Crud } from "./components/Crud.jsx";
 import { Namespace } from "./components/Namespace.jsx";
+import { Response } from "./components/Response.jsx";
 import { Room } from "./components/Room.jsx";
 
 const App = () => {
@@ -11,7 +12,8 @@ const App = () => {
       {/* <Crud /> */}
       {/* <Broadcast /> */}
       {/* <Namespace /> */}
-      <Room />
+      {/* <Room /> */}
+      <Response />
     </>
   );
 };

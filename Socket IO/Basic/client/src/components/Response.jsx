@@ -7,7 +7,7 @@ const socket = io("http://localhost:3000/chat", {
   timeout: 5000,
 });
 
-export const Room = () => {
+export const Response = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [room, setRoom] = useState("demoRoom");
@@ -42,15 +42,28 @@ export const Room = () => {
   const handleJoin = (e) => {
     e.preventDefault();
     if (room.trim()) {
-      socket.emit("join-room", room);
+      socket.emit("join-room", room, (response) => {
+        console.log(response);
+
+        if (response.status === true) {
+          setJoin(true);
+        } else {
+          setJoin(false);
+        }
+      });
     }
   };
 
   const handleLeave = () => {
     if (room.trim()) {
-      socket.emit("leave-room", room);
-      setMessages([]);
-      setJoin(false);
+      socket.emit("leave-room", room, (res) => {
+        if (res.status === true) {
+          setMessages([]);
+          setJoin(false);
+        } else {
+          console.log(res.message);
+        }
+      });
     } else {
       alert("Please enter a room name");
     }
@@ -65,8 +78,13 @@ export const Room = () => {
         timestamp: Date.now(),
       };
 
-      socket.emit("send-message", { room, payload });
-      setInput("");
+      socket.emit("send-message", { room, payload }, (res) => {
+        if (res.status === true) {
+          setInput("");
+        } else {
+          console.log(res.message);
+        }
+      });
     } else {
       alert("Please enter a message");
     }
@@ -86,7 +104,7 @@ export const Room = () => {
           />
           <button
             onClick={(e) => handleJoin(e)}
-            className="px-6 py-2 bg-blue-500 rounded-md"
+            className="px-6 py-2 bg-blue-500 rounded-md cursor-pointer hover:bg-blue-600"
           >
             Join
           </button>
