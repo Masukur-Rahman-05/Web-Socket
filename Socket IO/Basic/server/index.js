@@ -18,48 +18,47 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-io.on("connection", () => {
-  console.log("User connected to default namespace");
-});
+/* store who is online  ->  userId → socketId  */
+const userToSocket = new Map();
 
-const chatNamespace = io.of("/chat");
-chatNamespace.on("connection", (socket) => {
-  console.log("User connected - ", socket.id);
+/* send everyone the fresh user list */
+const sendUserList = () => {
+  io.emit(
+    "users",
+    [...userToSocket.keys()].map((id) => ({ id }))
+  );
+};
 
-  socket.on("join-room", (room, callback) => {
-    socket.join(room);
-    callback({ status: true });
-
-    chatNamespace.to(room).emit("receive-message", {
-      id: "System",
-      message: `${socket.id} joined`,
-      timestamp: Date.now(),
-    });
+io.on("connection", (socket) => {
+  console.log("User Connected", socket.id);
+  /* join: client sends { id }  */
+  socket.on("join", ({ id }) => {
+    if (!id) return;
+    userToSocket.set(id, socket.id);
+    sendUserList();
+    console.log(userToSocket);
   });
 
-  socket.on("leave-room", (room, callback) => {
-    if (!room) {
-      return callback({ status: false, message: "Please enter a room name" });
-    }
+  /* DM: client sends { to, message } */
+  socket.on("private-message", ({ to, message }) => {
+    const from = [...userToSocket].find(([, sid]) => sid === socket.id)?.[0];
+    if (!from || !to || to === from || !message?.trim()) return;
 
-    socket.leave(room);
-    console.log(`${socket.id} left room ${room}`);
-    chatNamespace.emit("receive-message", {
-      id: "System",
-      message: `${socket.id} left`,
-      timestamp: Date.now(),
-    });
+    const targetSock = userToSocket.get(to);
+    if (!targetSock) return; // user offline
 
-    callback({ status: true });
+    const payload = { from, to, message, ts: Date.now() };
+
+    io.to(targetSock).emit("private-message", payload); // to friend
+    socket.emit("private-message", payload); // back to sender
   });
 
-  socket.on("send-message", ({ room, payload }, callback) => {
-    if (!room) {
-      callback({ status: false, message: "Please enter a room name" });
-    } else {
-      chatNamespace.to(room).emit("receive-message", payload);
-      callback({ status: true });
-    }
+  /* clean up on disconnect */
+  socket.on("disconnect", () => {
+    [...userToSocket].forEach(([id, sid]) => {
+      if (sid === socket.id) userToSocket.delete(id);
+    });
+    sendUserList();
   });
 });
 
@@ -194,6 +193,54 @@ chatNamespace.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+  });
+});
+*/
+
+//.....................................Response and Acknowledgement...............................
+/*
+io.on("connection", () => {
+  console.log("User connected to default namespace");
+});
+
+const chatNamespace = io.of("/chat");
+chatNamespace.on("connection", (socket) => {
+  console.log("User connected - ", socket.id);
+
+  socket.on("join-room", (room, callback) => {
+    socket.join(room);
+    callback({ status: true });
+
+    chatNamespace.to(room).emit("receive-message", {
+      id: "System",
+      message: `${socket.id} joined`,
+      timestamp: Date.now(),
+    });
+  });
+
+  socket.on("leave-room", (room, callback) => {
+    if (!room) {
+      return callback({ status: false, message: "Please enter a room name" });
+    }
+
+    socket.leave(room);
+    console.log(`${socket.id} left room ${room}`);
+    chatNamespace.emit("receive-message", {
+      id: "System",
+      message: `${socket.id} left`,
+      timestamp: Date.now(),
+    });
+
+    callback({ status: true });
+  });
+
+  socket.on("send-message", ({ room, payload }, callback) => {
+    if (!room) {
+      callback({ status: false, message: "Please enter a room name" });
+    } else {
+      chatNamespace.to(room).emit("receive-message", payload);
+      callback({ status: true });
+    }
   });
 });
 */
