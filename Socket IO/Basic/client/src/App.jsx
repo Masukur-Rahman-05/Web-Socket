@@ -6,6 +6,7 @@ import Private from "./components/Private.jsx";
 import { PrivateNew } from "./components/PrivateNew.jsx";
 import { Response } from "./components/Response.jsx";
 import { Room } from "./components/Room.jsx";
+import PracticeJWT from "./components/practiceJWT.jsx";
 
 const App = () => {
   return (
@@ -17,7 +18,8 @@ const App = () => {
       {/* <Room /> */}
       {/* <Response /> */}
       {/* <Private /> */}
-      <PrivateNew />
+      {/* <PrivateNew /> */}
+      <PracticeJWT />
     </>
   );
 };
