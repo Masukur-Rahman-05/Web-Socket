@@ -1,9 +1,11 @@
 export const langs = {
-  javascript: "20.11.0",
-  python: "3.12.1",
-  cpp: "13.2.0",
-  php: "8.3.2",
-  java: "21.0.2",
+  javascript: "18.15.0",
+  typescript: "5.0.3",
+  python: "3.10.0",
+  "c++": "10.2.0",
+  java: "15.0.2",
+  php: "8.2.3",
+  go: "1.16.2",
 };
 
 export const languageSnippets = {
@@ -20,7 +22,7 @@ console.log(message);`,
     }
 }`,
 
-  cpp: `#include <iostream>
+  "c++": `#include <iostream>
 using namespace std;
 
 int main() {

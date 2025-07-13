@@ -1,66 +1,48 @@
 import React, { useState } from "react";
 import { CodeEditor } from "./components/Editor";
+import { ClockLoader } from "react-spinners";
+import { FaLinkedin } from "react-icons/fa";
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
   return (
-    <div className="w-screen min-h-screen bg-stone-900 text-white p-6 ">
-      <div>
-        <h1 className="text-2xl font-bold mb-6 text-green-700">CODE EDITOR</h1>
-      </div>
-      <div className="flex h-full gap-4">
-        {/* Left side: Editor */}
-        <div className="h-full w-full">
-          <CodeEditor />
+    <div className="min-h-screen w-full bg-stone-900 text-white p-4 sm:p-6 overflow-x-hidden">
+      {loading && (
+        <div className="fixed inset-0 bg-stone-900 bg-opacity-90 flex items-center justify-center z-50">
+          <ClockLoader color="#36d399" />
         </div>
+      )}
+
+      <div className="mb-6">
+        <h1 className="text-xl sm:text-2xl font-dot font-bold text-green-600 tracking-widest">
+          CODE EDITOR{" "}
+          <sup className="text-green-400 text-xs italic font-light">
+            - online -
+          </sup>
+        </h1>
+      </div>
+
+      {/* Editor + Output */}
+      <div className="w-full flex flex-col gap-6">
+        <CodeEditor loading={loading} setLoading={setLoading} />
+      </div>
+
+      {/* Footer */}
+      <div className="w-full mt-6">
+        <h2 className="text-xs sm:text-sm text-gray-200 font-dot flex flex-wrap items-center gap-2 tracking-widest">
+          Developed by -{" "}
+          <a
+            href="https://www.linkedin.com/in/md-masukur-rahaman-927790343/"
+            className="text-green-400 hover:text-green-600 flex items-center gap-1"
+          >
+            <FaLinkedin className="w-4 h-4 text-white" />
+            Masukur Rahaman
+          </a>
+        </h2>
       </div>
     </div>
   );
 }
 
 export default App;
-
-/*
-function App() {
-  const [code, setCode] = useState("print('Hello, World!')");
-  const [output, setOutput] = useState("");
-
-  const runCode = async () => {
-    try {
-      const res = await axios.post("http://localhost:5000/run", { code });
-      setOutput(res.data.output || res.data.error);
-    } catch (err) {
-      setOutput("Error connecting to server");
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold mb-6 text-purple-400">
-        Python Code Editor
-      </h1>
-
-      <div className="rounded-md overflow-hidden border border-gray-700">
-        <Editor
-          height="400px"
-          defaultLanguage="python"
-          value={code}
-          theme="vs-dark"
-          onChange={(value) => setCode(value)}
-        />
-      </div>
-
-      <button
-        onClick={runCode}
-        className="mt-4 bg-purple-600 hover:bg-purple-700 transition-colors px-5 py-2 rounded text-white font-semibold"
-      >
-        Run Code
-      </button>
-
-      <div className="mt-6 bg-gray-800 border border-gray-700 rounded p-4">
-        <h2 className="text-lg font-semibold text-green-400 mb-2">Output</h2>
-        <pre className="whitespace-pre-wrap">{output}</pre>
-      </div>
-    </div>
-  );
-}
-*/
