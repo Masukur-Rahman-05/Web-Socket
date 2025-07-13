@@ -78,8 +78,8 @@ export const Output = ({ language, editorRef }) => {
             <div>
               <pre
                 className={`${
-                  error === 0 ? "text-green-400" : "text-red-400"
-                } whitespace-pre-wrap font-dot text-sm sm:text-base`}
+                  error === 0 ? "text-green-500" : "text-red-500"
+                } whitespace-pre-wrap font-output font-extralight text-sm sm:text-base`}
               >
                 {result}
               </pre>
